@@ -7,7 +7,7 @@ class ListItemLink extends Component {
     const { to, ...props } = this.props;
     
     return (
-      <NavLink exact to={to}>
+      <NavLink exact to={to} {...props}>
         <ListItem {...props}/>
       </NavLink>
     );

@@ -5,21 +5,17 @@ import { Grid } from 'components/grid';
 import { Dropzone } from 'components/dropzone';
 import { InputGroup, Editor, InputGroupCurrencyIcon } from 'components/input';
 import { Button } from 'components/button';
+import ProductContext from '../contexts/Product';
 
 class ProductForm extends Component {
+  static contextType = ProductContext;
   state = {
     inputValidation: {
       name: false,
       description: false,
       price: false,
       stock: false
-    },
-    images: [],
-    name: '',
-    description: '',
-    promotionalPrice: '',
-    price: '',
-    stock: ''
+    }
   };
 
   inputChange = e => {
@@ -27,10 +23,8 @@ class ProductForm extends Component {
     this.onChange(name, value);
   }
 
-  onChange = (name, value )=> {
-    const state = this.state;
-    state[name] = value;
-    this.setState(state);
+  onChange = (name, value)=> {
+    this.context.updateEditing({[name]: value})
   }
 
   backToListing = () => {
@@ -39,12 +33,13 @@ class ProductForm extends Component {
 
   validateForm() {
     const state = this.state;
+    const fields = this.context.editingProduct
     let validate = true;
 
     for(var key in state.inputValidation) {
       if(state.inputValidation.hasOwnProperty(key)) {
-        const invalid = (isEmpty(state[key]) || state[key] === '<p></p>');
-    
+        const invalid = (isEmpty(fields[key]) || fields[key] === '<p></p>');
+   
         state.inputValidation[key] = invalid;
 
         if(invalid) {
@@ -57,32 +52,54 @@ class ProductForm extends Component {
     return validate;
   }
 
+  handleSave = () => {
+    const { id } = this.props.match.params
+    if (!this.validateForm()) return
+    this.context.add(this.context.editingProduct, id)
+    this.context.resetEditing()
+    this.backToListing()
+  }
+
+  remove () {
+    this.context.remove(this.context.editingProduct.id)
+    this.backToListing()
+  }
+
   get renderActionButtons() {
-    const { id } = this.state;
-    if(id) {
-      return (
-        <React.Fragment>
-          <Button size="small">SAVE UPDATES</Button>
-          <Button size="small" type="danger" className="ml--lg">REMOVE</Button>
-          <Button size="small" onClick={this.backToListing} className="ml--lg" outline>CANCEL</Button>
-        </React.Fragment>
-      )
+    const { id } = this.props.match.params;
+    return (
+      <>
+        <Button size="small" onClick={this.handleSave}>{ id ? 'SAVE UPDATES' : 'SAVE PRODUCT'}</Button>
+        { id && <Button size="small" type="danger" className="ml--lg" onClick={() => this.remove()}>REMOVE</Button> }
+        <Button size="small" onClick={this.backToListing} className="ml--lg" outline>CANCEL</Button>
+      </>
+    )
+  }
+
+  loadFormInformation () {
+    const { params } = this.props.match;
+    if (isEmpty(params)) {
+      this.context.resetEditing()
     } else {
-      return (
-        <React.Fragment>
-          <Button size="small">SAVE PRODUCT</Button>
-          <Button size="small" className="ml--lg" outline>CANCEL</Button>
-        </React.Fragment>
-      )
+      this.context.get(params.id)
     }
   }
   
-  componentDidMount() {
-    const { params } = this.props.match;
+  componentWillMount () {
+    this.loadFormInformation()
+  }
+  
+
+  componentDidUpdate (prevProps) {
+    if (this.props.location !== prevProps.location) {
+      this.loadFormInformation()
+      return
+    }
   }
 
   render() {
-    const { id, description, name, price, stock, promotionalPrice, images, inputValidation } = this.state;
+    const { images, name, description, promotionalPrice, price, stock } = this.context.editingProduct
+    const { inputValidation } = this.state;
 
     return (
       <div>

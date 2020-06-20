@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
+import ProductContext from '../contexts/Product';
 
 
 import { Grid } from 'components/grid';
@@ -10,17 +11,10 @@ import { Button, ButtonIcon } from 'components/button';
 import { Image } from 'components/image';
 
 class ProductList extends Component {
+  static contextType = ProductContext;
   state = {
     page: 0,
     maxItems: 8,
-    products: [{
-      id: '1',
-      name: '',
-      stock: '',
-      price: '',
-      promotionalPrice: '',
-      images: []
-    }]
   }
 
   changePage = page => {
@@ -29,9 +23,14 @@ class ProductList extends Component {
     })
   }
 
+  componentWillMount () {
+    this.context.getAll()
+  }
+  
   componentWillReact() {
     const maxPages = this.maxPages;
-    const { products, page, maxItems } = this.state;    
+    const { products } = this.context
+    const { page, maxItems } = this.state;    
 
     if((maxPages !== page) && typeof products[page * maxItems] === 'undefined'){
       this.setState({page: maxPages});
@@ -39,7 +38,8 @@ class ProductList extends Component {
   }
 
   get maxPages() {
-    const { products, maxItems } = this.state;    
+    const { products } = this.context
+    const { maxItems } = this.state;    
     return Math.ceil(products.length / (maxItems)) - 1;
   }
 
@@ -49,7 +49,7 @@ class ProductList extends Component {
     const { page } = this.state;
     
     for (let i = 0; i <= numPages; i++ ) {
-      pages.push(<Button outline={page === i} onClick={() => this.changePage(i)} className="mr--md">{i + 1}</Button>);
+      pages.push(<Button outline={page === i} onClick={() => this.changePage(i)} className="mr--md" key={i}>{i + 1}</Button>);
     }
 
     if(pages.length === 1) {
@@ -60,14 +60,15 @@ class ProductList extends Component {
   }
 
   render() {
-    const { products, page, maxItems } = this.state;
+    const { products } = this.context
+    const { page, maxItems } = this.state;
     const talbeRows = []
 
     if(isEmpty(products)){
       return (
         <div className="empty-list">
           Você ainda não possui nenhum produto cadastrado, 
-          crie um <Link to="/products/new">novo produto</Link> primeiro
+          crie um <Link to="/products/new" onClick={() => this.context.resetEditing()}>novo produto</Link> primeiro
         </div>
       );
     }
@@ -89,7 +90,7 @@ class ProductList extends Component {
             <td>
               <div className="product--detail">
                 <Image bg={image}/>
-                <Link to={`/products/edit/${item.id}`}>{item.name}</Link>
+                <Link to={`/products/edit/${item.id}`} onClick={() => this.context.get(item.id)}>{item.name}</Link>
               </div>
             </td>
             <td>{item.stock}</td>
@@ -97,8 +98,8 @@ class ProductList extends Component {
             <td>$ {item.promotionalPrice}</td>
             <td>{item.price}</td>
             <td>
-              <Link to={`/products/edit/${item.id}`}><ButtonIcon size="small" transparent icon='edit'>Edit</ButtonIcon></Link>
-              <button className='button button--sm'>
+              <Link to={`/products/edit/${item.id}`} onClick={() => this.context.get(item.id)}><ButtonIcon size="small" transparent icon='edit'>Edit</ButtonIcon></Link>
+              <button className='button button--sm' onClick={() => this.context.remove(item.id)}>
                 <div className='text'>Remove</div>
               </button>
             </td>
