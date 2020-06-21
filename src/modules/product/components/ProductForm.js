@@ -9,14 +9,19 @@ import ProductContext from '../contexts/Product';
 
 class ProductForm extends Component {
   static contextType = ProductContext;
-  state = {
-    inputValidation: {
-      name: false,
-      description: false,
-      price: false,
-      stock: false
-    }
-  };
+  constructor (props, context) {
+    super(props, context)
+    this.state = {
+      inputValidation: {
+        name: false,
+        description: false,
+        price: false,
+        stock: false
+      }
+    };
+    this.loadFormInformation = this.loadFormInformation.bind(this)
+    this.loadFormInformation()
+  }
 
   inputChange = e => {
     const { value, name } = e.target;
@@ -83,12 +88,7 @@ class ProductForm extends Component {
     } else {
       this.context.get(params.id)
     }
-  }
-  
-  componentWillMount () {
-    this.loadFormInformation()
-  }
-  
+  } 
 
   componentDidUpdate (prevProps) {
     if (this.props.location !== prevProps.location) {

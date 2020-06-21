@@ -1,7 +1,7 @@
 import React from 'react';
 import { Switch, Redirect, Route } from 'react-router-dom';
 import { ProductList, ProductForm } from 'modules/product';
-import { Logged, External } from 'components/layout';
+import { Logged } from 'components/layout';
 
 const Routing = () => (
   <Switch>   

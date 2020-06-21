@@ -8,15 +8,20 @@ class Breadcumbs extends Component {
     const classComponent = classname('breadcumbs', className);
 
     const CurrentBreadcumb = () => {
-      return window.location.pathname.includes('edit')
-      ? <a href="#">Edit Product</a>
-      : <a href="#">Add Product</a>;
+      const currentPath = window.location.pathname.replace('/tiendanube', '')
+      if (currentPath.includes('edit')) {
+        return <li><Link to={{pathname: currentPath}}>Edit Product</Link></li>
+      }
+      if (currentPath.includes('new')) {
+        return <li><Link to={{pathname: currentPath}}>Add Product</Link></li>
+      }
+      return null
     }
 
     return (
       <ul className={classComponent}>
         <li><Link to={'/products'}>My Products</Link></li>
-        <li><CurrentBreadcumb/></li>
+        <CurrentBreadcumb/>
       </ul>
     )
   }

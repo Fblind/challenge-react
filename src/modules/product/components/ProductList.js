@@ -12,19 +12,19 @@ import { Image } from 'components/image';
 
 class ProductList extends Component {
   static contextType = ProductContext;
-  state = {
-    page: 0,
-    maxItems: 8,
+  constructor (props, context) {
+    super(props)
+    this.state = {
+      page: 0,
+      maxItems: 8,
+    }
+    context.getAll()
   }
 
   changePage = page => {
     this.setState({
       page
     })
-  }
-
-  componentWillMount () {
-    this.context.getAll()
   }
   
   componentWillReact() {
